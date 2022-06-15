@@ -9,19 +9,27 @@ import (
 	"strings"
 )
 
+var cmdHistory []string
+
 func main() {
 	username := getCurrentUser()
 	hostname := getHostname()
 	pwd := getPwd()
-	fmt.Printf("%s@%s:~%s$ ", username, hostname, pwd)
 
-	reader := bufio.NewReader(os.Stdin)
-	cmdStr, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	for {
+		fmt.Printf("%s@%s:~%s$ ", username, hostname, pwd)
+
+		reader := bufio.NewReader(os.Stdin)
+		cmdStr, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+
+		if cmdStr != "" && cmdStr != "\n" {
+			cmdHistory = append(cmdHistory, cmdStr)
+		}
+		runCommand(cmdStr)
 	}
-
-	runCommand(cmdStr)
 }
 
 func getCurrentUser() string {
@@ -50,20 +58,31 @@ func getPwd() string {
 
 func runCommand(cmdStr string) {
 	cmdStr = strings.TrimSuffix(cmdStr, "\n")
+	cmdStrArr := strings.Fields(cmdStr)
 
-	switch cmdStr {
-	case "exit":
-		os.Exit(0)
-	default:
+	if len(cmdStrArr) != 0 {
+		switch cmdStrArr[0] {
+		case "exit":
+			os.Exit(0)
+		case "history":
+			printHistory()
+			return
+		default:
+		}
+
+		cmd := exec.Command(cmdStrArr[0], cmdStrArr[1:]...)
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		err := cmd.Run()
+		if err != nil {
+			errMsg := fmt.Sprintf("Error running command: %s\n%v", cmdStr, err)
+			fmt.Fprintln(os.Stderr, errMsg)
+		}
 	}
+}
 
-	fmt.Print("\n")
-	cmd := exec.Command(cmdStr)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	if err != nil {
-		errMsg := fmt.Sprintf("Error running command: %s\n%v", cmdStr, err)
-		fmt.Fprintln(os.Stderr, errMsg)
+func printHistory() {
+	for _, cmd := range cmdHistory {
+		fmt.Printf("%v", cmd)
 	}
 }
