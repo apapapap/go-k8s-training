@@ -14,9 +14,9 @@ var cmdHistory []string
 func main() {
 	username := getCurrentUser()
 	hostname := getHostname()
-	pwd := getPwd()
 
 	for {
+		pwd := getPwd()
 		fmt.Printf("%s@%s:~%s$ ", username, hostname, pwd)
 
 		reader := bufio.NewReader(os.Stdin)
@@ -67,6 +67,9 @@ func runCommand(cmdStr string) {
 		case "history":
 			printHistory()
 			return
+		case "cd":
+			changeDir(cmdStrArr)
+			return
 		default:
 		}
 
@@ -84,5 +87,25 @@ func runCommand(cmdStr string) {
 func printHistory() {
 	for _, cmd := range cmdHistory {
 		fmt.Printf("%v", cmd)
+	}
+}
+
+func changeDir(cmdStrArr []string) {
+	newDir := ""
+	var err error
+	if len(cmdStrArr) > 1 {
+		newDir = cmdStrArr[1]
+	} else {
+		newDir, err = os.UserHomeDir()
+		if err != nil {
+			errMsg := fmt.Sprintf("Error running command: %v\n%v", cmdStrArr, err)
+			fmt.Fprintln(os.Stderr, errMsg)
+		}
+	}
+
+	err = os.Chdir(newDir)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error running command: %v\n%v", cmdStrArr, err)
+		fmt.Fprintln(os.Stderr, errMsg)
 	}
 }
