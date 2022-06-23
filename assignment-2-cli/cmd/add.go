@@ -17,7 +17,7 @@ import (
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "journal entry add {TEXT-TO-ADD}",
-	Long:  "journal entry add {TEXT-TO-ADD}",
+	Long:  "Journal entry add {TEXT-TO-ADD}",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		journalText := args[0]

@@ -15,7 +15,7 @@ import (
 // viewCmd represents the view command
 var viewCmd = &cobra.Command{
 	Use:   "view",
-	Short: "View journal records",
+	Short: "journal entry view",
 	Long:  "View your journal records limited to the latest 50 entries",
 	Run: func(cmd *cobra.Command, args []string) {
 		homeDir, err := os.UserHomeDir()
