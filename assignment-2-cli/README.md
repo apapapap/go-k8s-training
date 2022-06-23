@@ -9,7 +9,7 @@
   - logout
 - help
 
-NOTE: All the supporting files get generated in the `$HOME` directory of the user.
+NOTE: All the supporting files get generated in the `$HOME/journal` directory of the user.
 
 ```
 ashish@velotio-ThinkPad-E14-Gen-2:~/work/Projects/velotio/go-k8s-training$ journal help
