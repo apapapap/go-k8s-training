@@ -85,8 +85,8 @@ func runCommand(cmdStr string) {
 }
 
 func printHistory() {
-	for _, cmd := range cmdHistory {
-		fmt.Printf("%v", cmd)
+	for i, cmd := range cmdHistory {
+		fmt.Printf("%d  %v", i+1, cmd)
 	}
 }
 
@@ -100,6 +100,7 @@ func changeDir(cmdStrArr []string) {
 		if err != nil {
 			errMsg := fmt.Sprintf("Error running command: %v\n%v", cmdStrArr, err)
 			fmt.Fprintln(os.Stderr, errMsg)
+			return
 		}
 	}
 
