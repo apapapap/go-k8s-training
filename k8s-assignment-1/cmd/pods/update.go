@@ -45,6 +45,9 @@ var updateCmd = &cobra.Command{
 			return
 		}
 
+		if pod.ObjectMeta.Labels == nil {
+			pod.ObjectMeta.Labels = make(map[string]string)
+		}
 		pod.ObjectMeta.Labels["type"] = "frontend"
 		_, err = clientset.CoreV1().Pods(namespace).Update(context.TODO(), pod, v1.UpdateOptions{})
 		if err != nil {
