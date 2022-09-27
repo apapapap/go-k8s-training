@@ -41,28 +41,32 @@ var createCmd = &cobra.Command{
 		clientset, _ := kubernetes.NewForConfig(config)
 		namespace := "default"
 
-		pod := &corev1.Pod{
-			TypeMeta: v1.TypeMeta{},
-			ObjectMeta: v1.ObjectMeta{
-				Name:      "my-pod",
-				Namespace: namespace,
-			},
-			Spec: corev1.PodSpec{
-				Containers: []corev1.Container{
-					{
-						Name:  "nginx-ap",
-						Image: "nginx",
-					},
-				},
-			},
-		}
-
+		pod := getPodObj(namespace)
 		_, err = clientset.CoreV1().Pods(namespace).Create(context.TODO(), pod, v1.CreateOptions{})
 		if err != nil {
 			fmt.Println("Error: ", err)
 			return
 		}
+		fmt.Println("Pod created successfully")
 	},
+}
+
+func getPodObj(namespace string) *corev1.Pod {
+	return &corev1.Pod{
+		TypeMeta: v1.TypeMeta{},
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "my-pod",
+			Namespace: namespace,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  "nginx-ap",
+					Image: "nginx",
+				},
+			},
+		},
+	}
 }
 
 func init() {

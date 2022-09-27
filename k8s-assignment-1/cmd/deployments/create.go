@@ -49,6 +49,7 @@ var createCmd = &cobra.Command{
 			fmt.Println("Error: ", err)
 			return
 		}
+		fmt.Println("Deployment created successfully")
 	},
 }
 
