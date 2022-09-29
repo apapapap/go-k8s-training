@@ -6,15 +6,10 @@ package namespace
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // deleteCmd represents the delete namespace command
@@ -23,22 +18,17 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete a namespace",
 	Long:  "kube-client delete namespace",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
+		var err error
+		if cmdv1.UseCtrlRuntime {
+			ns, errGetNs := GetNamespace()
+			if errGetNs != nil {
+				fmt.Println("Error: ", err)
+				return
 			}
+			err = cmdv1.CtrlClient.Delete(context.Background(), ns)
+		} else {
+			err = cmdv1.ClientSet.CoreV1().Namespaces().Delete(context.TODO(), "demo-ns", v1.DeleteOptions{})
 		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
-		err = clientset.CoreV1().Namespaces().Delete(context.TODO(), "demo-ns", v1.DeleteOptions{})
 		if err != nil {
 			fmt.Println("Error: ", err)
 			return

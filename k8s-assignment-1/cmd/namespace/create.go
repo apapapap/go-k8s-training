@@ -6,16 +6,11 @@ package namespace
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // createCmd represents the create namespace command
@@ -24,28 +19,19 @@ var createCmd = &cobra.Command{
 	Short: "Create namespace",
 	Long:  "kube-client create namespace",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
+		var err error
 		namespace := getNamespaceObj()
 
-		_, err = clientset.CoreV1().Namespaces().Create(context.TODO(), namespace, metav1.CreateOptions{})
+		if cmdv1.UseCtrlRuntime {
+			err = cmdv1.CtrlClient.Create(context.Background(), namespace)
+		} else {
+			_, err = cmdv1.ClientSet.CoreV1().Namespaces().Create(context.TODO(), namespace, metav1.CreateOptions{})
+		}
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Failed to create namespace. Error: ", err)
 			return
 		}
+
 		fmt.Println("Namespace created successfully")
 	},
 }

@@ -6,15 +6,12 @@ package namespace
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // getCmd represents the get namespace command
@@ -23,22 +20,7 @@ var getCmd = &cobra.Command{
 	Short: "kube-client namespace get",
 	Long:  "Get a namespace",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
-		namespace, err := GetNamespace(clientset)
+		namespace, err := GetNamespace()
 		if err != nil {
 			fmt.Println("Error: ", err)
 			return
@@ -51,8 +33,16 @@ func init() {
 	namespaceCmd.AddCommand(getCmd)
 }
 
-func GetNamespace(clientset *kubernetes.Clientset) (*apiv1.Namespace, error) {
-	namespace, err := clientset.CoreV1().Namespaces().Get(context.TODO(), "demo-ns", v1.GetOptions{})
+func GetNamespace() (*corev1.Namespace, error) {
+	var err error
+	namespace := &corev1.Namespace{}
+	if cmdv1.UseCtrlRuntime {
+		err = cmdv1.CtrlClient.Get(context.Background(), client.ObjectKey{
+			Name: "demo-ns",
+		}, namespace)
+	} else {
+		namespace, err = cmdv1.ClientSet.CoreV1().Namespaces().Get(context.TODO(), "demo-ns", v1.GetOptions{})
+	}
 	if err != nil {
 		return nil, err
 	}
