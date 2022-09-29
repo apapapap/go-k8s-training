@@ -35,7 +35,6 @@ var updateCmd = &cobra.Command{
 		} else {
 			_, err = cmdv1.ClientSet.CoreV1().Pods(namespace).Update(context.TODO(), pod, v1.UpdateOptions{})
 		}
-
 		if err != nil {
 			fmt.Println("Failed to update pod, error: ", err)
 			return

@@ -25,7 +25,7 @@ var listCmd = &cobra.Command{
 		pods := &corev1.PodList{}
 		namespace := "default"
 		if cmdv1.UseCtrlRuntime {
-			err = cmdv1.CtrlClient.List(context.Background(), pods, client.InNamespace("default"))
+			err = cmdv1.CtrlClient.List(context.Background(), pods, client.InNamespace(namespace))
 		} else {
 			pods, err = cmdv1.ClientSet.CoreV1().Pods(namespace).List(context.TODO(), v1.ListOptions{})
 		}

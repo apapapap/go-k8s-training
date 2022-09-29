@@ -23,7 +23,7 @@ var getCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		pod, err := GetPod()
 		if err != nil {
-			fmt.Printf("failed to get pods in namespace default: %v\n", err)
+			fmt.Printf("failed to get pod in namespace default, error: %v\n", err)
 			os.Exit(1)
 		}
 		fmt.Println("Pod name: ", pod.Name)

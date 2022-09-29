@@ -22,7 +22,7 @@ var deleteCmd = &cobra.Command{
 		if cmdv1.UseCtrlRuntime {
 			ns, errGetNs := GetNamespace()
 			if errGetNs != nil {
-				fmt.Println("Error: ", err)
+				fmt.Println("Error: ", errGetNs)
 				return
 			}
 			err = cmdv1.CtrlClient.Delete(context.Background(), ns)
@@ -30,7 +30,7 @@ var deleteCmd = &cobra.Command{
 			err = cmdv1.ClientSet.CoreV1().Namespaces().Delete(context.TODO(), "demo-ns", v1.DeleteOptions{})
 		}
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Failed to delete namespace, error: ", err)
 			return
 		}
 

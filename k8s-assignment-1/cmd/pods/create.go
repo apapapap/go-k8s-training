@@ -27,7 +27,6 @@ var createCmd = &cobra.Command{
 		} else {
 			_, err = cmdv1.ClientSet.CoreV1().Pods(namespace).Create(context.TODO(), pod, v1.CreateOptions{})
 		}
-
 		if err != nil {
 			fmt.Println("Error creating pod, error: ", err)
 			return

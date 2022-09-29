@@ -23,7 +23,7 @@ var deleteCmd = &cobra.Command{
 		if cmdv1.UseCtrlRuntime {
 			pod, errGetPod := GetPod()
 			if errGetPod != nil {
-				fmt.Println("Error: ", err)
+				fmt.Println("Error: ", errGetPod)
 				return
 			}
 			err = cmdv1.CtrlClient.Delete(context.Background(), pod)
@@ -31,7 +31,7 @@ var deleteCmd = &cobra.Command{
 			err = cmdv1.ClientSet.CoreV1().Pods(namespace).Delete(context.TODO(), "my-pod", metav1.DeleteOptions{})
 		}
 		if err != nil {
-			fmt.Println("Failed to delete pod. Error: ", err)
+			fmt.Println("Failed to delete pod, error: ", err)
 			return
 		}
 
