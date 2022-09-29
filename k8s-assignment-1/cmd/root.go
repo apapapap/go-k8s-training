@@ -65,3 +65,7 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
+func init() {
+	RootCmd.PersistentFlags().BoolVarP(&UseCtrlRuntime, "ctrl-runtime", "c", false, "Use controller runtime to create config")
+}

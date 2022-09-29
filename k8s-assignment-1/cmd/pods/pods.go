@@ -17,5 +17,4 @@ var podsCmd = &cobra.Command{
 
 func init() {
 	cmdv1.RootCmd.AddCommand(podsCmd)
-	cmdv1.RootCmd.PersistentFlags().BoolVarP(&cmdv1.UseCtrlRuntime, "ctrl-runtime", "c", false, "Use controller runtime to create config")
 }

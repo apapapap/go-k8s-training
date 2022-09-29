@@ -9,7 +9,6 @@ import (
 
 	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,11 +21,10 @@ var deleteCmd = &cobra.Command{
 		namespace := "default"
 		var err error
 		if cmdv1.UseCtrlRuntime {
-			pod := &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      "my-pod",
-				},
+			pod, errGetPod := GetPod()
+			if errGetPod != nil {
+				fmt.Println("Error: ", err)
+				return
 			}
 			err = cmdv1.CtrlClient.Delete(context.Background(), pod)
 		} else {
