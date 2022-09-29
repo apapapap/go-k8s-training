@@ -6,15 +6,10 @@ package deployments
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // updateCmd represents the update deployment command
@@ -23,23 +18,8 @@ var updateCmd = &cobra.Command{
 	Short: "Update a deployment",
 	Long:  "kube-client update deployment",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
 		namespace := "default"
-		deployment, err := GetDeployment(clientset)
+		deployment, err := GetDeployment()
 		if err != nil {
 			fmt.Println("Error: ", err)
 			return
@@ -48,10 +28,15 @@ var updateCmd = &cobra.Command{
 		if deployment.ObjectMeta.Labels == nil {
 			deployment.ObjectMeta.Labels = make(map[string]string)
 		}
-		deployment.ObjectMeta.Labels["type1"] = "frontend1"
-		_, err = clientset.AppsV1().Deployments(namespace).Update(context.TODO(), deployment, metav1.UpdateOptions{})
+		deployment.ObjectMeta.Labels["type"] = "frontend"
+
+		if cmdv1.UseCtrlRuntime {
+			err = cmdv1.CtrlClient.Update(context.Background(), deployment)
+		} else {
+			_, err = cmdv1.ClientSet.AppsV1().Deployments(namespace).Update(context.TODO(), deployment, metav1.UpdateOptions{})
+		}
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Failed to update deployment, error: ", err)
 			return
 		}
 

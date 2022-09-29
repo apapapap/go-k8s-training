@@ -6,15 +6,10 @@ package deployments
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // deleteCmd represents the delete deployment command
@@ -23,26 +18,20 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete a deployment",
 	Long:  "kube-client delete deployment",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
 		namespace := "default"
-
-		err = clientset.AppsV1().Deployments(namespace).Delete(context.TODO(), "demo-deployment", v1.DeleteOptions{})
+		var err error
+		if cmdv1.UseCtrlRuntime {
+			deployment, errGetDeployment := GetDeployment()
+			if errGetDeployment != nil {
+				fmt.Println("Error: ", errGetDeployment)
+				return
+			}
+			err = cmdv1.CtrlClient.Delete(context.Background(), deployment)
+		} else {
+			err = cmdv1.ClientSet.AppsV1().Deployments(namespace).Delete(context.TODO(), "demo-deployment", v1.DeleteOptions{})
+		}
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Failed to delete deployment, error: ", err)
 			return
 		}
 

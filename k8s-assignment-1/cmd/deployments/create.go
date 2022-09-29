@@ -6,17 +6,12 @@ package deployments
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // createCmd represents the create deployment command
@@ -25,28 +20,16 @@ var createCmd = &cobra.Command{
 	Short: "Create deployment",
 	Long:  "kube-client create deployment",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
+		var err error
 		namespace := "default"
-
 		deployment := getDeploymentObj()
-
-		_, err = clientset.AppsV1().Deployments(namespace).Create(context.TODO(), deployment, metav1.CreateOptions{})
+		if cmdv1.UseCtrlRuntime {
+			err = cmdv1.CtrlClient.Create(context.Background(), deployment)
+		} else {
+			_, err = cmdv1.ClientSet.AppsV1().Deployments(namespace).Create(context.TODO(), deployment, metav1.CreateOptions{})
+		}
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Error creating deployment, error: ", err)
 			return
 		}
 		fmt.Println("Deployment created successfully")

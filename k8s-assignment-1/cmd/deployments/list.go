@@ -6,14 +6,12 @@ package deployments
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // listCmd represents the list deployments command
@@ -22,24 +20,15 @@ var listCmd = &cobra.Command{
 	Short: "kube-client deployments list",
 	Long:  "List deployments",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
+		namespace := "default"
+		deployments := &appsv1.DeploymentList{}
+		var err error
+		if cmdv1.UseCtrlRuntime {
+			err = cmdv1.CtrlClient.List(context.Background(), deployments, client.InNamespace(namespace))
+		} else {
+			deployments, err = cmdv1.ClientSet.AppsV1().Deployments(namespace).List(context.TODO(), v1.ListOptions{})
 		}
 
-		clientset, _ := kubernetes.NewForConfig(config)
-
-		namespace := "default"
-		deployments, err := clientset.AppsV1().Deployments(namespace).List(context.TODO(), v1.ListOptions{})
 		if err != nil {
 			fmt.Println("Error: ", err)
 			return
@@ -47,7 +36,6 @@ var listCmd = &cobra.Command{
 
 		fmt.Printf("Namespace: %s\n", namespace)
 		fmt.Printf("Number of deployments in the cluster: %d\n", len(deployments.Items))
-
 		for i, deployment := range deployments.Items {
 			fmt.Printf("%d. %s\n", i+1, deployment.Name)
 		}
