@@ -7,14 +7,12 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // getCmd represents the get pod command
@@ -23,25 +21,10 @@ var getCmd = &cobra.Command{
 	Short: "kube-client pods get",
 	Long:  "Get a pod",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
+		pod, err := GetPod()
 		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
-		pod, err := GetPod(clientset)
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
+			fmt.Printf("failed to get pods in namespace default: %v\n", err)
+			os.Exit(1)
 		}
 		fmt.Println("Pod name: ", pod.Name)
 	},
@@ -51,9 +34,19 @@ func init() {
 	podsCmd.AddCommand(getCmd)
 }
 
-func GetPod(clientset *kubernetes.Clientset) (*corev1.Pod, error) {
+func GetPod() (*corev1.Pod, error) {
+	var err error
+	pod := &corev1.Pod{}
 	namespace := "default"
-	pod, err := clientset.CoreV1().Pods(namespace).Get(context.TODO(), "my-pod", v1.GetOptions{})
+	if cmdv1.UseCtrlRuntime {
+		err = cmdv1.CtrlClient.Get(context.Background(), client.ObjectKey{
+			Namespace: namespace,
+			Name:      "my-pod",
+		}, pod)
+	} else {
+		pod, err = cmdv1.ClientSet.CoreV1().Pods(namespace).Get(context.TODO(), "my-pod", v1.GetOptions{})
+	}
+
 	if err != nil {
 		return nil, err
 	}

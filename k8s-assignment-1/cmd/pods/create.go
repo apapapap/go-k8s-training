@@ -6,16 +6,11 @@ package pods
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // createCmd represents the create pod command
@@ -24,27 +19,17 @@ var createCmd = &cobra.Command{
 	Short: "Create pod",
 	Long:  "kube-client create pod",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
+		var err error
+		namespace := "default"
+		pod := getPodObj(namespace)
+		if cmdv1.UseCtrlRuntime {
+			err = cmdv1.CtrlClient.Create(context.Background(), pod)
+		} else {
+			_, err = cmdv1.ClientSet.CoreV1().Pods(namespace).Create(context.TODO(), pod, v1.CreateOptions{})
 		}
 
-		clientset, _ := kubernetes.NewForConfig(config)
-		namespace := "default"
-
-		pod := getPodObj(namespace)
-		_, err = clientset.CoreV1().Pods(namespace).Create(context.TODO(), pod, v1.CreateOptions{})
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Error creating pod, error: ", err)
 			return
 		}
 		fmt.Println("Pod created successfully")

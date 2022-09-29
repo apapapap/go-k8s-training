@@ -6,15 +6,11 @@ package pods
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	cmdv1 "github.com/apapapap/k8s-dev-training/assignment-1/kube-client/cmd"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // deleteCmd represents the delete pod command
@@ -23,26 +19,21 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete a pod",
 	Long:  "kube-client delete pod",
 	Run: func(cmd *cobra.Command, args []string) {
-		var config *rest.Config
-		fmt.Println("Creating in-cluster config")
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			fmt.Println("Failed to create in-cluster config, trying to fetch from global kube config")
-			kubeConfigFilepath := filepath.Join(
-				os.Getenv("HOME"), ".kube", "config",
-			)
-			config, err = clientcmd.BuildConfigFromFlags("", kubeConfigFilepath)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		clientset, _ := kubernetes.NewForConfig(config)
 		namespace := "default"
-
-		err = clientset.CoreV1().Pods(namespace).Delete(context.TODO(), "my-pod", v1.DeleteOptions{})
+		var err error
+		if cmdv1.UseCtrlRuntime {
+			pod := &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: namespace,
+					Name:      "my-pod",
+				},
+			}
+			err = cmdv1.CtrlClient.Delete(context.Background(), pod)
+		} else {
+			err = cmdv1.ClientSet.CoreV1().Pods(namespace).Delete(context.TODO(), "my-pod", metav1.DeleteOptions{})
+		}
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Println("Failed to delete pod. Error: ", err)
 			return
 		}
 
