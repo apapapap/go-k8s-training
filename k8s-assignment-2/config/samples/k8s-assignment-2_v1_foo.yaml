@@ -1,0 +1,12 @@
+apiVersion: k8s-assignment-2.my.domain/v1
+kind: Foo
+metadata:
+  labels:
+    app.kubernetes.io/name: foo
+    app.kubernetes.io/instance: foo-sample
+    app.kubernetes.io/part-of: k8s-assignment-2
+    app.kuberentes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: k8s-assignment-2
+  name: foo-sample
+spec:
+  name: test-cr-ap-foo

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-cr-ap-foo
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu:latest
+    # Just sleep forever
+    command: [ "sleep" ]
+    args: [ "infinity" ]
