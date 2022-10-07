@@ -8,7 +8,7 @@ rules:
 - apiGroups:
   - k8s-assignment-2.my.domain
   resources:
-  - foos
+  - flighttickets
   verbs:
   - create
   - delete
@@ -20,13 +20,13 @@ rules:
 - apiGroups:
   - k8s-assignment-2.my.domain
   resources:
-  - foos/finalizers
+  - flighttickets/finalizers
   verbs:
   - update
 - apiGroups:
   - k8s-assignment-2.my.domain
   resources:
-  - foos/status
+  - flighttickets/status
   verbs:
   - get
   - patch

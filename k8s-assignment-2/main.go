@@ -89,11 +89,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.FooReconciler{
+	if err = (&controllers.FlightTicketReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Foo")
+		setupLog.Error(err, "unable to create controller", "controller", "FlightTicket")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

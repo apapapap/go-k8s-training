@@ -10,7 +10,7 @@ resources:
   controller: true
   domain: my.domain
   group: k8s-assignment-2
-  kind: Foo
+  kind: FlightTicket
   path: my.domain/k8s-assignment-2/api/v1
   version: v1
 version: "3"

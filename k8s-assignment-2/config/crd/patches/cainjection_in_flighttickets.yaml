@@ -4,4 +4,4 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
-  name: foos.k8s-assignment-2.my.domain
+  name: flighttickets.k8s-assignment-2.my.domain
