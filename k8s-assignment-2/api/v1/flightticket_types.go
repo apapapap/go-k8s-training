@@ -33,7 +33,7 @@ type FlightTicketSpec struct {
 	// To - Arrival location
 	To string `json:"to,omitempty"`
 
-	//+kubebuilder:validation:Minimum=0
+	//+kubebuilder:validation:Minimum=1
 	//+kubebuilder:validation:Maximum=9
 	// Number - Number of tickets for booking
 	Number int `json:"number,omitempty"`
