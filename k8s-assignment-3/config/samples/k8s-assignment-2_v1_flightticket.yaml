@@ -12,3 +12,6 @@ spec:
   from: Mumbai
   to: Pune
   number: 3
+  gvk:
+    kind: Deployment
+    replicas: 2

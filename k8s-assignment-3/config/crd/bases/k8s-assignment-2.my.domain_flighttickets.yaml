@@ -38,19 +38,38 @@ spec:
               from:
                 description: From - Departure location
                 type: string
+              gvk:
+                properties:
+                  group:
+                    type: string
+                  kind:
+                    type: string
+                  replicas:
+                    format: int32
+                    minimum: 1
+                    type: integer
+                  version:
+                    type: string
+                type: object
               number:
                 description: Number - Number of tickets for booking
                 maximum: 9
-                minimum: 0
+                minimum: 1
                 type: integer
               to:
                 description: To - Arrival location
                 type: string
+            required:
+            - gvk
             type: object
           status:
             description: FlightTicketStatus defines the observed state of FlightTicket
             properties:
               bookingStatus:
+                enum:
+                - InProgress
+                - Done
+                - Failed
                 type: string
               fare:
                 type: integer

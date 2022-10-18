@@ -37,6 +37,18 @@ type FlightTicketSpec struct {
 	//+kubebuilder:validation:Maximum=9
 	// Number - Number of tickets for booking
 	Number int `json:"number,omitempty"`
+
+	// +kubebuilder:validation:Required
+	Gvk GroupVersionKind `json:"gvk"`
+}
+
+type GroupVersionKind struct {
+	Group   string `json:"group,omitempty"`
+	Version string `json:"version,omitempty"`
+	Kind    string `json:"kind,omitempty"`
+
+	// +kubebuilder:validation:Minimum=1
+	Replicas int32 `json:"replicas,omitempty"`
 }
 
 // FlightTicketStatus defines the observed state of FlightTicket
@@ -44,8 +56,10 @@ type FlightTicketStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// +kubebuilder:validation:Enum=InProgress;Done;Failed
 	BookingStatus string `json:"bookingStatus,omitempty"`
 	Fare          int    `json:"fare,omitempty"`
+	ReadyReplicas int
 }
 
 //+kubebuilder:object:root=true
