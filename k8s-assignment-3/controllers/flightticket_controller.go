@@ -24,7 +24,6 @@ import (
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -125,7 +124,7 @@ func (r *FlightTicketReconciler) FlightTicketGvk(flightTicket *k8sassignment2v1.
 		statefulSet := &appsv1.StatefulSet{}
 		err := r.Client.Get(context.TODO(), types.NamespacedName{Name: flightTicketStatefulSet.Name, Namespace: flightTicketStatefulSet.Namespace}, statefulSet)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				log.Info("FlightTicket StatefulSet not found, will be created")
 				controllerutil.SetControllerReference(flightTicket, flightTicketStatefulSet, r.Scheme)
 				err = r.Client.Create(context.TODO(), flightTicketStatefulSet)
@@ -151,7 +150,7 @@ func (r *FlightTicketReconciler) FlightTicketGvk(flightTicket *k8sassignment2v1.
 		dss := &appsv1.Deployment{}
 		err := r.Client.Get(context.TODO(), types.NamespacedName{Name: flightTicketDeployment.Name, Namespace: flightTicketDeployment.Namespace}, dss)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				log.Info("FlightTicket Deployment not found, will be created")
 				controllerutil.SetControllerReference(flightTicket, flightTicketDeployment, r.Scheme)
 				err = r.Client.Create(context.TODO(), flightTicketDeployment)

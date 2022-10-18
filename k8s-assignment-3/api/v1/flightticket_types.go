@@ -59,7 +59,7 @@ type FlightTicketStatus struct {
 	// +kubebuilder:validation:Enum=InProgress;Done;Failed
 	BookingStatus string `json:"bookingStatus,omitempty"`
 	Fare          int    `json:"fare,omitempty"`
-	ReadyReplicas int
+	ReadyReplicas int    `json:"readyReplicas,omitempty"`
 }
 
 //+kubebuilder:object:root=true
