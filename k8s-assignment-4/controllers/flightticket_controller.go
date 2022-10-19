@@ -150,9 +150,6 @@ func (r *FlightTicketReconciler) cleanupExternalResources(flightTicket *k8sassig
 	log.Info("cancel booking and charge cancellation fee")
 	flightTicket.Status.BookingStatus = "Cancelled"
 	flightTicket.Status.Fare = 350
-	if err := r.Update(ctx, flightTicket); err != nil {
-		return ctrl.Result{}, err
-	}
 
 	return nil
 }
