@@ -56,7 +56,7 @@ type FlightTicketStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// +kubebuilder:validation:Enum=InProgress;Done;Failed
+	// +kubebuilder:validation:Enum=InProgress;Done;Failed;Cancelled
 	BookingStatus string `json:"bookingStatus,omitempty"`
 	Fare          int    `json:"fare,omitempty"`
 	ReadyReplicas int    `json:"readyReplicas,omitempty"`

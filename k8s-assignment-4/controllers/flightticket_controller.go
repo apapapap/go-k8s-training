@@ -78,6 +78,35 @@ func (r *FlightTicketReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
+	finalizerName := "k8s-assignment-2/flight-ticket/finalizer"
+	// Since, delete on an object is Soft-delete, the presence of deletion timestamp on the object indicates that it is being deleted.
+	if flightTicket.ObjectMeta.DeletionTimestamp.IsZero() {
+		// If the object is not being deleted and does not have the finalizer registered,
+		// then add the finalizer and update the object in Kubernetes.
+		if !controllerutil.ContainsFinalizer(flightTicket, finalizerName) {
+			controllerutil.AddFinalizer(flightTicket, finalizerName)
+			if err := r.Update(ctx, flightTicket); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		// If object is being deleted and the finalizer is still present in finalizers list,
+		// then execute the pre-delete logic and remove the finalizer and update the object.
+		if controllerutil.ContainsFinalizer(flightTicket, finalizerName) {
+			if err := r.cleanupExternalResources(flightTicket, log); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			controllerutil.RemoveFinalizer(flightTicket, finalizerName)
+			if err := r.Update(ctx, flightTicket); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		// Stop reconciliation as the item is being deleted
+		return ctrl.Result{}, nil
+	}
+
 	flightTicket.Status.ReadyReplicas = int(flightTicket.Spec.Gvk.Replicas)
 
 	if flightTicket.Status.BookingStatus != "Done" {
@@ -114,6 +143,18 @@ func (r *FlightTicketReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&k8sassignment2v1.FlightTicket{}).
 		WithEventFilter(r.ignoreDeletionPredicate()).
 		Complete(r)
+}
+
+func (r *FlightTicketReconciler) cleanupExternalResources(flightTicket *k8sassignment2v1.FlightTicket, log logr.Logger) error {
+	// cancel booking and charge cancellation fee
+	log.Info("cancel booking and charge cancellation fee")
+	flightTicket.Status.BookingStatus = "Cancelled"
+	flightTicket.Status.Fare = 350
+	if err := r.Update(ctx, flightTicket); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	return nil
 }
 
 func (r *FlightTicketReconciler) FlightTicketGvk(flightTicket *k8sassignment2v1.FlightTicket, log logr.Logger) error {
